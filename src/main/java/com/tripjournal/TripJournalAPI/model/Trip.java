@@ -54,6 +54,7 @@ public class Trip {
 
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
+        map.put("id", id);
         map.put("ownerId", ownerId);
         map.put("name", name);
         map.put("photo", photo);

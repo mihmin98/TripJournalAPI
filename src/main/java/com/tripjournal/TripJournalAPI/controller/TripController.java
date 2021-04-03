@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
@@ -37,20 +36,18 @@ public class TripController {
 
     @PostMapping
     public ResponseEntity<Object> addTrip(@RequestBody Trip trip) throws ExecutionException, InterruptedException {
-        DocumentReference documentReference = dbFirestore.collection(TRIP_COLLECTION_NAME).document(trip.getName());
+        DocumentReference documentReference = dbFirestore.collection(TRIP_COLLECTION_NAME).document();
 
-        if (documentReference.get().get().exists()) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
-        }
-
+        trip.setId(documentReference.getId());
         documentReference.set(trip.toMap()).get();
+
         return new ResponseEntity<>(trip, HttpStatus.OK);
     }
 
     @PostMapping("/like")
     public ResponseEntity<Object> likeTrip(@RequestBody LikeTripDto likeTripDto) throws ExecutionException, InterruptedException {
 
-        DocumentSnapshot documentTripSnapshot = dbFirestore.collection(TRIP_COLLECTION_NAME).document(likeTripDto.getTripName()).get().get();
+        DocumentSnapshot documentTripSnapshot = dbFirestore.collection(TRIP_COLLECTION_NAME).document(likeTripDto.getTripId()).get().get();
 
         if (!documentTripSnapshot.exists()) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -64,15 +61,18 @@ public class TripController {
         Trip trip = Trip.toTrip(Objects.requireNonNull(documentTripSnapshot.getData()));
         List<String> alreadyLike = trip.getLikedBy();
         User user = User.toUser(Objects.requireNonNull(documentUserSnapshot.getData()));
+        if (alreadyLike.contains(user.getEmail())) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
         alreadyLike.add(user.getEmail());
         trip.setLikedBy(alreadyLike);
 
-        DocumentReference tripRef = dbFirestore.collection(TRIP_COLLECTION_NAME).document(trip.getName());
+        DocumentReference tripRef = dbFirestore.collection(TRIP_COLLECTION_NAME).document(trip.getId());
         tripRef.update(trip.generateMap()).get();
 
         DocumentReference documentReference = dbFirestore.collection(USER_COLLECTION_NAME).document(likeTripDto.getUserId());
         List<String> userFavorites = user.getFavorites();
-        userFavorites.add(likeTripDto.getTripName());
+        userFavorites.add(likeTripDto.getTripId());
         user.setFavorites(userFavorites);
         documentReference.update(user.generateMap()).get();
 

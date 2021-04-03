@@ -7,6 +7,6 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class LikeTripDto {
 
-    private String tripName;
+    private String tripId;
     private String userId;
 }

@@ -36,7 +36,7 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) throws ExecutionException, InterruptedException {
+    public ResponseEntity<User> register(@RequestBody User user) throws ExecutionException, InterruptedException {
 
         DocumentReference documentReference = dbFirestore.collection(USER_COLLECTION_NAME).document(user.getEmail());
 
@@ -89,6 +89,10 @@ public class UserController {
         }
 
         User user = User.toUser(Objects.requireNonNull(documentSnapshot.getData()));
+        if (!user.getPassword().equals(loginRequest.getPassword())) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
         user.setPassword(null);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
