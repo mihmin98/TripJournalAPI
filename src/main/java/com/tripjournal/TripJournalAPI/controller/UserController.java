@@ -24,13 +24,17 @@ public class UserController {
     private Firestore dbFirestore;
 
     @GetMapping("/{id}")
-    public User getUser(@PathVariable("id") String id) throws ExecutionException, InterruptedException {
+    public ResponseEntity<User> getUser(@PathVariable("id") String id) throws ExecutionException, InterruptedException {
         DocumentSnapshot documentSnapshot = dbFirestore.collection(USER_COLLECTION_NAME).document(id).get().get();
+
+        if (!documentSnapshot.exists()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
 
         User user = User.toUser(Objects.requireNonNull(documentSnapshot.getData()));
         user.setPassword(null);
 
-        return user;
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @PostMapping
