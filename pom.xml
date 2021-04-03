@@ -14,7 +14,7 @@
 	<name>TripJournalAPI</name>
 	<description>API for TripJournal app</description>
 	<properties>
-		<java.version>11</java.version>
+		<java.version>8</java.version>
 		<firebase-admin.version>7.0.1</firebase-admin.version>
 	</properties>
 	<dependencies>

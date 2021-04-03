@@ -36,4 +36,18 @@ public class User {
 
         return map;
     }
+
+    public Map<String, Object> generateMap() {
+        Map<String, Object> map = new HashMap<>();
+
+        if (email != null)
+            map.put("email", email);
+        if (password != null)
+            map.put("password", password);
+        if (username != null)
+            map.put("username", username);
+        if (favorites != null)
+            map.put("favorites", favorites);
+        return map;
+    }
 }
