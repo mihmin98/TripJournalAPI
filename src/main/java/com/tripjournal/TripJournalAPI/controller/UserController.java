@@ -37,7 +37,6 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<User> register(@RequestBody User user) throws ExecutionException, InterruptedException {
-
         DocumentReference documentReference = dbFirestore.collection(USER_COLLECTION_NAME).document(user.getEmail());
 
         if (documentReference.get().get().exists()) {
@@ -80,7 +79,7 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @GetMapping("/login")
+    @PostMapping("/login")
     public ResponseEntity<User> login(@RequestBody LoginRequest loginRequest) throws ExecutionException, InterruptedException {
         DocumentSnapshot documentSnapshot = dbFirestore.collection(USER_COLLECTION_NAME).document(loginRequest.getEmail()).get().get();
 
