@@ -54,7 +54,7 @@ public class TripController {
 
         DocumentReference documentReference = dbFirestore.collection(TRIP_COLLECTION_NAME).document(trip.getId());
         documentReference.update(trip.generateMap()).get();
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(trip, HttpStatus.OK);
     }
 
     @DeleteMapping("/{tripId}")
@@ -62,12 +62,12 @@ public class TripController {
         DocumentSnapshot documentSnapshot = dbFirestore.collection(TRIP_COLLECTION_NAME).document(id).get().get();
 
         if (!documentSnapshot.exists()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(id, HttpStatus.NOT_FOUND);
         }
 
         DocumentReference documentReference = dbFirestore.collection(TRIP_COLLECTION_NAME).document(id);
         documentReference.delete().get();
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(id, HttpStatus.OK);
 
     }
 

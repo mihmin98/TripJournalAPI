@@ -23,12 +23,12 @@ public class UserController {
     private Firestore dbFirestore;
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUser(@PathVariable("id") String id) throws ExecutionException, InterruptedException {
+    public ResponseEntity<Object> getUser(@PathVariable("id") String id) throws ExecutionException, InterruptedException {
 
         DocumentSnapshot documentSnapshot = dbFirestore.collection(USER_COLLECTION_NAME).document(id).get().get();
 
         if (!documentSnapshot.exists()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(id, HttpStatus.NOT_FOUND);
         }
         User user = User.toUser(Objects.requireNonNull(documentSnapshot.getData()));
         user.setPassword(null);
@@ -40,11 +40,11 @@ public class UserController {
         DocumentReference documentReference = dbFirestore.collection(USER_COLLECTION_NAME).document(user.getEmail());
 
         if (documentReference.get().get().exists()) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
+            return new ResponseEntity<>(user, HttpStatus.CONFLICT);
         }
 
         if (!dbFirestore.collection(USER_COLLECTION_NAME).whereEqualTo("username", user.getUsername()).get().get().isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
+            return new ResponseEntity<>(user, HttpStatus.CONFLICT);
         }
         documentReference.set(user.toMap()).get();
         return new ResponseEntity<>(user, HttpStatus.OK);
@@ -56,40 +56,40 @@ public class UserController {
         DocumentSnapshot documentSnapshot = dbFirestore.collection(USER_COLLECTION_NAME).document(user.getEmail()).get().get();
 
         if (!documentSnapshot.exists()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(user, HttpStatus.NOT_FOUND);
         }
 
         if (!dbFirestore.collection(USER_COLLECTION_NAME).whereEqualTo("username", user.getUsername()).get().get().isEmpty()) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
+            return new ResponseEntity<>(user, HttpStatus.CONFLICT);
         }
         DocumentReference documentReference = dbFirestore.collection(USER_COLLECTION_NAME).document(user.getEmail());
         documentReference.update(user.generateMap()).get();
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteUser(@PathVariable("id") String id) throws ExecutionException, InterruptedException {
         DocumentSnapshot documentSnapshot = dbFirestore.collection(USER_COLLECTION_NAME).document(id).get().get();
         if (!documentSnapshot.exists()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(id, HttpStatus.NOT_FOUND);
         }
         DocumentReference documentReference = dbFirestore.collection(USER_COLLECTION_NAME).document(id);
 
         documentReference.delete().get();
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(id, HttpStatus.OK);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<User> login(@RequestBody LoginRequest loginRequest) throws ExecutionException, InterruptedException {
+    public ResponseEntity<Object> login(@RequestBody LoginRequest loginRequest) throws ExecutionException, InterruptedException {
         DocumentSnapshot documentSnapshot = dbFirestore.collection(USER_COLLECTION_NAME).document(loginRequest.getEmail()).get().get();
 
         if (!documentSnapshot.exists()) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(loginRequest, HttpStatus.NOT_FOUND);
         }
 
         User user = User.toUser(Objects.requireNonNull(documentSnapshot.getData()));
         if (!user.getPassword().equals(loginRequest.getPassword())) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(loginRequest, HttpStatus.BAD_REQUEST);
         }
 
         user.setPassword(null);
