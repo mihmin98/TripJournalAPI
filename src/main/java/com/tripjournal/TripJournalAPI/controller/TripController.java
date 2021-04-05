@@ -1,9 +1,6 @@
 package com.tripjournal.TripJournalAPI.controller;
 
-import com.google.cloud.firestore.CollectionReference;
-import com.google.cloud.firestore.DocumentReference;
-import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.*;
 import com.tripjournal.TripJournalAPI.dto.LikeTripDto;
 import com.tripjournal.TripJournalAPI.model.Trip;
 import com.tripjournal.TripJournalAPI.model.User;
@@ -12,9 +9,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.websocket.server.PathParam;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import static com.tripjournal.TripJournalAPI.controller.UserController.USER_COLLECTION_NAME;
 
@@ -42,6 +42,20 @@ public class TripController {
         documentReference.set(trip.toMap()).get();
 
         return new ResponseEntity<>(trip, HttpStatus.OK);
+    }
+
+    @GetMapping("/others/{ownerId}")
+    public ResponseEntity<Object> fetchOtherTrips(@PathVariable("ownerId") String ownerId) throws ExecutionException, InterruptedException {
+
+        List<QueryDocumentSnapshot> queryDocumentSnapshots = dbFirestore.collection(TRIP_COLLECTION_NAME)
+                .whereNotEqualTo("ownerId", ownerId).get().get().getDocuments();
+
+        List<Trip> trips = queryDocumentSnapshots.stream()
+                .map(QueryDocumentSnapshot::getData)
+                .map(Trip::toTrip)
+                .collect(Collectors.toList());
+
+        return new ResponseEntity<>(trips, HttpStatus.OK);
     }
 
     @PostMapping("/like")
