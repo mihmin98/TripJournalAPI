@@ -44,6 +44,33 @@ public class TripController {
         return new ResponseEntity<>(trip, HttpStatus.OK);
     }
 
+    @PutMapping
+    public ResponseEntity<Object> updateTrip(@RequestBody Trip trip) throws ExecutionException, InterruptedException {
+        DocumentSnapshot documentSnapshot = dbFirestore.collection(TRIP_COLLECTION_NAME).document(trip.getId()).get().get();
+
+        if (!documentSnapshot.exists()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        DocumentReference documentReference = dbFirestore.collection(TRIP_COLLECTION_NAME).document(trip.getId());
+        documentReference.update(trip.generateMap()).get();
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{tripId}")
+    public ResponseEntity<Object> deleteTrip(@PathVariable("tripId") String id) throws ExecutionException, InterruptedException {
+        DocumentSnapshot documentSnapshot = dbFirestore.collection(TRIP_COLLECTION_NAME).document(id).get().get();
+
+        if (!documentSnapshot.exists()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        DocumentReference documentReference = dbFirestore.collection(TRIP_COLLECTION_NAME).document(id);
+        documentReference.delete().get();
+        return new ResponseEntity<>(HttpStatus.OK);
+
+    }
+
     @GetMapping("/others/{ownerId}")
     public ResponseEntity<Object> fetchOtherTrips(@PathVariable("ownerId") String ownerId) throws ExecutionException, InterruptedException {
 
