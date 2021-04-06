@@ -44,8 +44,8 @@ public class Trip {
         trip.setPhoto((String) map.get("photo"));
         trip.setDestinationName((String) map.get("destinationName"));
         trip.setDestinationCoords((String) map.get("destinationCoords"));
-        trip.setCost(Double.parseDouble((String) map.get("cost")));
-        trip.setRating(Integer.parseInt((String) map.get("rating")));
+        trip.setCost((Double) map.get("cost"));
+        trip.setRating(((Long) map.get("rating")).intValue());
         trip.setDescription((String) map.get("description"));
         trip.setLikedBy((List<String>) map.get("likedBy"));
 

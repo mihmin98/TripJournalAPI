@@ -119,4 +119,39 @@ public class TripController {
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @PostMapping("/unlike")
+    public ResponseEntity<Object> unlikeTrip(@RequestBody LikeTripDto likeTripDto) throws ExecutionException, InterruptedException {
+
+        DocumentSnapshot documentTripSnapshot = dbFirestore.collection(TRIP_COLLECTION_NAME).document(likeTripDto.getTripId()).get().get();
+
+        if (!documentTripSnapshot.exists()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        DocumentSnapshot documentUserSnapshot = dbFirestore.collection(USER_COLLECTION_NAME).document(likeTripDto.getUserId()).get().get();
+
+        if (!documentUserSnapshot.exists()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        Trip trip = Trip.toTrip(Objects.requireNonNull(documentTripSnapshot.getData()));
+        List<String> alreadyLike = trip.getLikedBy();
+        User user = User.toUser(Objects.requireNonNull(documentUserSnapshot.getData()));
+        if (!alreadyLike.contains(user.getEmail())) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        alreadyLike.remove(user.getEmail());
+        trip.setLikedBy(alreadyLike);
+
+        DocumentReference tripRef = dbFirestore.collection(TRIP_COLLECTION_NAME).document(trip.getId());
+        tripRef.update(trip.generateMap()).get();
+
+        DocumentReference documentReference = dbFirestore.collection(USER_COLLECTION_NAME).document(likeTripDto.getUserId());
+        List<String> userFavorites = user.getFavorites();
+        userFavorites.remove(likeTripDto.getTripId());
+        user.setFavorites(userFavorites);
+        documentReference.update(user.generateMap()).get();
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }
