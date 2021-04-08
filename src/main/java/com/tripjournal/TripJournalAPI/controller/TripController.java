@@ -17,6 +17,7 @@ import org.apache.tomcat.util.http.fileupload.disk.DiskFileItem;
 import org.conscrypt.io.IoUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -145,7 +146,7 @@ public class TripController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/photo")
+    @PostMapping(value = "/photo", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> uploadPhoto(@RequestBody PhotoDto photoDto) throws ExecutionException, InterruptedException, IOException {
         if (!initializedStorage) {
             FileInputStream serviceAccount =
@@ -182,11 +183,11 @@ public class TripController {
         // set trip photo to what was uploaded
         tripDocumentReference.update("photo", filename).get();
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(filename, HttpStatus.OK);
     }
 
-    @GetMapping("/photo")
-    public ResponseEntity<Object> downloadPhoto(@RequestBody String photoId) throws ExecutionException, InterruptedException, IOException {
+    @GetMapping("/photo/{photoId}")
+    public ResponseEntity<Object> downloadPhoto(@PathVariable("photoId") String photoId) throws ExecutionException, InterruptedException, IOException {
         if (!initializedStorage) {
             FileInputStream serviceAccount =
                     new FileInputStream(System.getenv("GOOGLE_APPLICATION_CREDENTIALS"));
